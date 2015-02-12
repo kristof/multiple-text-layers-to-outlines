@@ -1,0 +1,89 @@
+var com = {};
+
+com.outlines = {
+
+	// Log only when debugging is true
+	debugLog: function(msg) {
+		if(this.debug) log(msg);
+	},
+
+	// Simple dialog
+	alert: function (msg, title) {
+		title = title || 'Sketch translate';
+		var app = [NSApplication sharedApplication];
+		[app displayDialog:msg withTitle:title];
+	},
+
+	isTextLayer: function(layer) {
+		if (layer.isKindOfClass(MSTextLayer)) return true;
+	},
+
+	// Thanks to Andrey Shakhmin for creating this awesome function
+	// https://github.com/turbobabr
+	// ============================================================
+	textLayerToOutlinesWithTextLayer: function(textLayer){
+
+		var path=textLayer.bezierPathWithTransforms(); // Get text layers' outline as NSBezierPath.
+
+		var parent=textLayer.parentGroup();
+		var shape=MSShapeGroup.shapeWithBezierPath(path); // Create a vector shape with the outline.
+
+		// Set the style previously used in text layer.
+		shape.style = textLayer.style();
+
+		// If text layer doesn't have a fill style, we create it with the color used for the text.
+		var style=shape.style();
+		if(!style.fill()) {
+			var fill=style.fills().addNewStylePart();
+			fill.color = MSColor.colorWithNSColor(textLayer.style().textStyle().attributes().NSColor);
+		}
+
+		// Copy name and selection status.
+		var isSelected=textLayer.isSelected();
+		shape.name = textLayer.name();
+		shape.setIsSelected(isSelected);
+
+		// Remove text layer.
+		parent.removeLayer(textLayer);
+
+		// Add a newly created shape to the text layers' parent group.
+		parent.addLayers([shape]);
+
+		return shape;
+	},
+
+	textLayerToOutlinesWithLayers: function(layers){
+		var errorCount = 0;
+
+		// Loop over layers and convert to outlines
+		for(var i=0; i<layers.count(); i++){
+			var layer=layers.objectAtIndex(i);
+			if(layer && this.isTextLayer(layer)) {
+				var vectorizedTextLayer=this.textLayerToOutlinesWithTextLayer(layer);
+				print(vectorizedTextLayer);
+			}else{
+				errorCount++;
+			}
+		}
+
+		this.resultDialog(errorCount);
+
+		return errorCount;
+	},
+
+	// Show errors if any
+	resultDialog: function(errorCount){
+		if (errorCount == 1){
+			this.alert('Text conversion to outlines completed with ' + errorCount + ' error. Because some layers do not seem to be a text layer', 'Completed with errors');
+		}else if (errorCount > 1){
+			this.alert('Text conversion to outlines completed with ' + errorCount + ' errors. Because some layers do not seem to be a text layer', 'Completed with errors');
+		}else{
+			this.alert('Text conversion to outlines completed successfully', 'Success');
+		}
+	},
+
+	debug: false
+
+};
+
+com.outlines.textLayerToOutlinesWithLayers(selection);
