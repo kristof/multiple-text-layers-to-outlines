@@ -7,8 +7,7 @@ Enables you to select multiple text layers and convert them to outlines (shapes)
 3. In Sketch 3, select `Plugins > Reveal Plugins Folder...` from the menu bar, and put the `Multiple Text Layers To Outlines` folder in this folder.
 
 ## Usage
-### Create a translation file
-1. Select some text layers.
+1. Select one or more text layers.
 2. Run `Multiple Text Layers To Outlines` from the plugins menu.
 3. Your text layers are now editable shapes.
 
